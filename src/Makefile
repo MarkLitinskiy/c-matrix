@@ -23,10 +23,6 @@ test: s21_matrix.a
 	$(CC) $(CFLAGS) mineTests.c s21_matrix.c -o run.out $(CHECKFLAGS) -lgcov --coverage
 	./run.out
 
-testReadme: s21_matrix.a
-	$(CC) $(CFLAGS) testReadme.c s21_matrix.c -o run.out $(CHECKFLAGS) -lgcov --coverage
-	./run.out
-
 gcov_report: s21_matrix.a
 	$(CC) $(CFLAGS) $(PROFILE_FLAGS) s21_matrix.c mineTests.c -o gcov_test $(CHECKFLAGS)
 	./gcov_test
@@ -37,13 +33,16 @@ gcov_report: s21_matrix.a
 
 rebuild: clean all
 
-check:
-	cp ../materials/linters/.clang-format ./
+check_style:
+	cp ../materials/.clang-format ./
 	clang-format -n *.c
 	clang-format -n *.h
 	rm -rf .clang-format
 
-# запуск через sh run.sh с запущенным докером
+docker_check:
+	docker build -t "valgrind:1.0" .
+	docker run --rm -v $PWD:/tmp -w /tmp valgrind:1.0
+
 valgrind: test
 	 CK_FORK=no valgrind --vgdb=no --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose ./run.out
 	 make clean
